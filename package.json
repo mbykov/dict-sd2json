@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "babel src -d dist",
-    "start": "npm run build && node dist/index"
+    "start": "npm run build && node dist/run"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
