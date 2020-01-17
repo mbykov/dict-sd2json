@@ -53,7 +53,6 @@ function checkDir(dirpath) {
 
 function getIfo(fn) {
   let ifopath = path.resolve(fn.dirpath, fn.ifo)
-  log('______GET IFOPATH__', ifopath)
   return fse.readFile(ifopath)
     .then(ifobuf=> {
       let ifo = ifobuf.toString().split('\n').slice(0,7)
@@ -63,10 +62,9 @@ function getIfo(fn) {
 
 function parseIDX(fn) {
   let idxpath = path.resolve(fn.dirpath, fn.idx)
-  log('_________idxpath', idxpath)
   return fse.readFile(idxpath)
     .then(buf=>{
-      // GZIP
+
       if (/gz/.test(idxpath)) {
         console.time('BUFFER-UNGZIP')
         let rawdata = new Uint8Array(buf)
@@ -96,28 +94,21 @@ function parseIDX(fn) {
         // }
         index++
       }
-      log('___________________indexData', indexData.slice(0, 3))
       return indexData
-      // parseDict(dictpath, indexData)
     }).catch(err=>{
       log('__ IDX ERR:', err)
     })
 }
 
-// let rawdata = new Uint8Array(buffer)
 function parseDict(fn, indexData) {
   let dictpath = path.resolve(fn.dirpath, fn.dict)
-  log('__dictpath:', dictpath)
   return fse.readFile(dictpath)
     .then(gzbuf=>{
-
       // get_chunks - работает (без R&A), чанки можно достать. Но зачем - это чанки для отдельной статьи
       // let gzip_header = read_gzip_header(buffer)
       // let chunks = get_chunks(gzip_header)
 
-      log('___________________SIZE:', gzbuf.length)
       let rawdata = new Uint8Array(gzbuf)
-      log('___________________rawdata:', rawdata.length)
       // let unzipped = Buffer.from(uint8Array)
       let unzipped = pako.inflate(rawdata);
 
@@ -129,7 +120,7 @@ function parseDict(fn, indexData) {
         let decoded = decoder.decode(unchunk)
         decoded = decoded.split('\n').slice(1).join('; ').trim()
         let clean = sanitizeHtml(decoded, {
-          allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'abr' ],
+          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr' ], // 'i',
           allowedAttributes: {
             'a': [ 'href' ]
           }
@@ -139,25 +130,10 @@ function parseDict(fn, indexData) {
         cb(null, json)
       }
 
-
-      // return rstream(indexData)
       return miss.pipe(
         rstream(indexData),
         miss.parallel(5, toJson)
       )
-
-      // return miss.pipe(
-      //   rstream(indexData),
-      //   miss.parallel(5, toJson),
-      //   miss.through.obj(function (row, enc, next) {
-      //     // log('FINISH', JSON.stringify(row))
-      //     ws.write(row)
-      //     next()
-      //   }, function(cb) {
-      //     ws.end()
-      //   })
-      // )
-
     })
 }
 
@@ -167,7 +143,7 @@ function rstream(indexData) {
     if (idx == _.keys(indexData).length) return next(null, null)
     let item = indexData[idx]
     item.unshift(idx)
-    let arr = JSON.stringify(item) // [0] //+ '\n'
+    let arr = JSON.stringify(item)
     idx++
     next(null, arr)
   })

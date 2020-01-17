@@ -8,8 +8,8 @@ const fse = require('fs-extra')
 const miss = require('mississippi')
 
 let dictpath = process.argv.slice(2)[0] || false
-const dirname = 'dicts1'
-dictpath = path.resolve(__dirname, '../', dirname)
+const dirname = 'dicts-tmp'
+dictpath = path.resolve(__dirname, '../../', dirname)
 
 let docs = []
 let chunk = []
@@ -21,7 +21,7 @@ stardict(dictpath)
       arr[1],
       miss.through.obj(function (doc, enc, next) {
         docs.push(doc)
-        // console.log('FINISH', JSON.stringify(doc))
+        // console.log('DOC', JSON.stringify(doc))
         chunk.push(doc)
         if (chunk.length == 1000) {
           pouchIT(chunk)
@@ -29,7 +29,8 @@ stardict(dictpath)
         }
         next()
       }, function(cb) {
-        log('____json-docs:', docs.length)
+        log('____total json docs:', docs)
+        log('____total json docs:', docs.length)
         pouchIT(chunk)
         cb()
       })

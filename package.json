@@ -6,14 +6,14 @@
   "copyright": "© 2019, Michael Bykov",
   "license": "GPL-3.0",
   "homepage": "http://diglossa.org/diglossa.js",
-  "main": "dist/index.js",
+  "main": "dist/stardict.js",
  "keywords": [
     "node.js",
     "json"
   ],
   "scripts": {
     "build": "babel src -d dist",
-    "start": "npm run build && node ."
+    "start": "npm run build && node dist/index"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
