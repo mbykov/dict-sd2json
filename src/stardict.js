@@ -6,11 +6,12 @@ const fse = require('fs-extra')
 const log = console.log
 const util = require('util')
 const pako = require('pako')
-const zlib = require('zlib')
-const unzip = zlib.createGunzip()
+// const zlib = require('zlib')
+// const unzip = zlib.createGunzip()
 let decoder = new (util.TextDecoder)('utf-8')
 const miss = require('mississippi')
 const sanitizeHtml = require('sanitize-html');
+const detectCharacterEncoding = require('detect-character-encoding');
 
 function streamToString (stream) {
   const chunks = []
@@ -21,8 +22,8 @@ function streamToString (stream) {
   })
 }
 
-export default (dirpath) => {
-  return checkDir(dirpath)
+export default (dictpath) => {
+  return checkDir(dictpath)
     .then(fn=> {
       return Promise.all([
         getIfo(fn),
@@ -34,17 +35,22 @@ export default (dirpath) => {
     })
 }
 
-function checkDir(dirpath) {
+function checkDir(dictpath) {
+  let dirpath = path.dirname(dictpath)
+  let filename = path.basename(dictpath)
+  filename = path.parse(filename).name
+  let refn = new RegExp(filename)
+
   return fse.readdir(dirpath)
       .then(fns=> {
         const fn = {dirpath: dirpath}
-        let ifoname = _.find(fns, fn=> { return /ifo/.test(fn)})
+        let ifoname = _.find(fns, fn=> { return refn.test(fn) && /ifo/.test(fn)})
         if (!ifoname) throw new Error('Not a stardict archive')
         fn.ifo = ifoname
-        let idxname = _.find(fns, fn=> { return /idx/i.test(fn)})
+        let idxname = _.find(fns, fn=> { return refn.test(fn) && /idx/i.test(fn)})
         if (!idxname) throw new Error('Not a stardict archive')
         fn.idx = idxname
-        let dictname = _.find(fns, fn=> { return /\.dict/i.test(fn)})
+        let dictname = _.find(fns, fn=> { return refn.test(fn) && /\.dz/i.test(fn)})
         if (!dictname) throw new Error('Not a stardict archive')
         fn.dict = dictname
         return fn
@@ -62,6 +68,7 @@ function getIfo(fn) {
 
 function parseIDX(fn) {
   let idxpath = path.resolve(fn.dirpath, fn.idx)
+  // return fse.readFile(idxpath, {encoding: 'utf16le'})
   return fse.readFile(idxpath)
     .then(buf=>{
 
@@ -102,6 +109,11 @@ function parseIDX(fn) {
 
 function parseDict(fn, indexData) {
   let dictpath = path.resolve(fn.dirpath, fn.dict)
+  // return fse.readFile(dictpath, {encoding: 'utf8'})
+  const fileBuffer = fse.readFileSync(dictpath)
+  const charsetMatch = detectCharacterEncoding(fileBuffer)
+  console.log('__charsetMatch:', charsetMatch)
+
   return fse.readFile(dictpath)
     .then(gzbuf=>{
       // get_chunks - работает (без R&A), чанки можно достать. Но зачем - это чанки для отдельной статьи
@@ -117,6 +129,8 @@ function parseDict(fn, indexData) {
         let idx = arr.shift()
         let offset = arr[1], size = arr[2];
         let unchunk = unzipped.slice(offset, offset + size)
+
+        // decoder = new (util.TextDecoder)('UTF-16LE')
         let decoded = decoder.decode(unchunk)
         decoded = decoded.split('\n').slice(1).join('; ').trim()
         let clean = sanitizeHtml(decoded, {
