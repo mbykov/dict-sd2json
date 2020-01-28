@@ -8,10 +8,11 @@ const util = require('util')
 const pako = require('pako')
 // const zlib = require('zlib')
 // const unzip = zlib.createGunzip()
-let decoder = new (util.TextDecoder)('utf-8')
+
+let decoder = new util.TextDecoder('utf-8')
+
 const miss = require('mississippi')
 const sanitizeHtml = require('sanitize-html');
-const detectCharacterEncoding = require('detect-character-encoding');
 
 function streamToString (stream) {
   const chunks = []
@@ -68,17 +69,15 @@ function getIfo(fn) {
 
 function parseIDX(fn) {
   let idxpath = path.resolve(fn.dirpath, fn.idx)
-  // return fse.readFile(idxpath, {encoding: 'utf16le'})
   return fse.readFile(idxpath)
     .then(buf=>{
 
       if (/gz/.test(idxpath)) {
-        console.time('BUFFER-UNGZIP')
+        // console.time('BUFFER-UNGZIP')
         let rawdata = new Uint8Array(buf)
         let uint8Array = pako.inflate(rawdata);
         buf = Buffer.from(uint8Array)
-        // buf = uint8Array
-        console.timeEnd('BUFFER-UNGZIP')
+        // console.timeEnd('BUFFER-UNGZIP')
       }
 
       const indexData = []
@@ -94,11 +93,6 @@ function parseIDX(fn) {
         let size = buf.readUInt32BE(i)
         i += 4
         indexData.push([word, offset, size])
-
-        // let arr = syns[index]
-        // if (arr !== undefined) {
-        //   for (let v of arr) indexData.push([v, offset, size])
-        // }
         index++
       }
       return indexData
@@ -109,19 +103,10 @@ function parseIDX(fn) {
 
 function parseDict(fn, indexData) {
   let dictpath = path.resolve(fn.dirpath, fn.dict)
-  // return fse.readFile(dictpath, {encoding: 'utf8'})
-  const fileBuffer = fse.readFileSync(dictpath)
-  const charsetMatch = detectCharacterEncoding(fileBuffer)
-  console.log('__charsetMatch:', charsetMatch)
 
   return fse.readFile(dictpath)
     .then(gzbuf=>{
-      // get_chunks - работает (без R&A), чанки можно достать. Но зачем - это чанки для отдельной статьи
-      // let gzip_header = read_gzip_header(buffer)
-      // let chunks = get_chunks(gzip_header)
-
       let rawdata = new Uint8Array(gzbuf)
-      // let unzipped = Buffer.from(uint8Array)
       let unzipped = pako.inflate(rawdata);
 
       function toJson(chunk, cb) {
@@ -130,17 +115,18 @@ function parseDict(fn, indexData) {
         let offset = arr[1], size = arr[2];
         let unchunk = unzipped.slice(offset, offset + size)
 
-        // decoder = new (util.TextDecoder)('UTF-16LE')
         let decoded = decoder.decode(unchunk)
         decoded = decoded.split('\n').slice(1).join('; ').trim()
+
         let clean = sanitizeHtml(decoded, {
-          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr' ], // 'i',
+          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'dtrn', 'i' ],
           allowedAttributes: {
             'a': [ 'href' ]
           }
           // , allowedIframeHostnames: ['www.youtube.com']
         });
         let json = {dict: arr[0], trns: clean}
+        // let json = {dict: arr[0], trns: decoded}
         cb(null, json)
       }
 
