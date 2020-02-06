@@ -6,8 +6,6 @@ const fse = require('fs-extra')
 const log = console.log
 const util = require('util')
 const pako = require('pako')
-// const zlib = require('zlib')
-// const unzip = zlib.createGunzip()
 
 let decoder = new util.TextDecoder('utf-8')
 
@@ -119,14 +117,13 @@ function parseDict(fn, indexData) {
         decoded = decoded.split('\n').slice(1).join('; ').trim()
 
         let clean = sanitizeHtml(decoded, {
-          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'dtrn', 'i' ],
+          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
           allowedAttributes: {
             'a': [ 'href' ]
           }
-          // , allowedIframeHostnames: ['www.youtube.com']
+          // , allowedIframeHostnames: ['www.diglossa.org']
         });
         let json = {dict: arr[0], trns: clean}
-        // let json = {dict: arr[0], trns: decoded}
         cb(null, json)
       }
 

@@ -14,6 +14,7 @@ if (!dictpath) {
   dictpath = path.resolve(__dirname, '../../../DICTS/_dicts', fn)
 }
 
+
 let docs = []
 let chunk = []
 
