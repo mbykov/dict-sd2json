@@ -10,3 +10,4 @@ dist
 _*.org
 Junk
 test/Junk
+test/fixtures

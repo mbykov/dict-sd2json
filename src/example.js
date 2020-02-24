@@ -1,5 +1,5 @@
 //
-import stardict from "./stardict";
+import { stardict } from "./stardict";
 import _ from 'lodash'
 
 const log = console.log
@@ -14,14 +14,14 @@ if (!dictpath) {
   dictpath = path.resolve(__dirname, '../../../DICTS/_dicts', fn)
 }
 
-
 let docs = []
 let chunk = []
 
 stardict(dictpath)
-  .then(arr=>{
+  .then(res=> {
+    log('_______ SAVE IFO', res.ifo)
     miss.pipe(
-      arr[1],
+      res.stream,
       miss.through.obj(function (doc, enc, next) {
         docs.push(doc)
         chunk.push(doc)
@@ -33,7 +33,6 @@ stardict(dictpath)
       }, function(cb) {
         pouchIt(chunk)
         docs = _.filter(docs, doc=> { return doc.dict && doc.trns })
-        log('__dict-ifo:', arr[0])
         log('____docs:', docs.slice(-3))
         log('____total json docs:', docs.length)
         fse.writeFileSync('myfile.txt', JSON.stringify(docs.slice(-3)));

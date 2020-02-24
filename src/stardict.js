@@ -12,6 +12,8 @@ let decoder = new util.TextDecoder('utf-8')
 const miss = require('mississippi')
 const sanitizeHtml = require('sanitize-html');
 
+let unzipped
+
 function streamToString (stream) {
   const chunks = []
   return new Promise((resolve, reject) => {
@@ -21,17 +23,26 @@ function streamToString (stream) {
   })
 }
 
-export default (dictpath) => {
-  return checkDir(dictpath)
-    .then(fn=> {
-      return Promise.all([
-        getIfo(fn),
-        parseIDX(fn)
-          .then(indexData=> {
-            return parseDict(fn, indexData)
-          })
-      ])
-    })
+export async function stardict (dictpath) {
+  try {
+    let fns = await checkDir(dictpath)
+    // log('_FNS', fns)
+    let ifo = await parseIFO(fns)
+    // log('_IFO', ifo)
+    let indexData = await parseIndex(fns)
+    // log('_IDX', indexData.length)
+    let dict = await parseDict(fns, indexData)
+    let docs = []
+    let chunk = []
+
+    let stream = miss.pipe(
+      rstream(indexData),
+      miss.parallel(5, toJson)
+    )
+    return {ifo: ifo, stream: stream}
+  } catch(err) {
+    console.log('_FNS', err)
+  }
 }
 
 function checkDir(dictpath) {
@@ -56,7 +67,7 @@ function checkDir(dictpath) {
       })
 }
 
-function getIfo(fn) {
+function parseIFO(fn) {
   let ifopath = path.resolve(fn.dirpath, fn.ifo)
   return fse.readFile(ifopath)
     .then(ifobuf=> {
@@ -65,7 +76,7 @@ function getIfo(fn) {
     })
 }
 
-function parseIDX(fn) {
+function parseIndex(fn) {
   let idxpath = path.resolve(fn.dirpath, fn.idx)
   return fse.readFile(idxpath)
     .then(buf=>{
@@ -101,37 +112,30 @@ function parseIDX(fn) {
 
 function parseDict(fn, indexData) {
   let dictpath = path.resolve(fn.dirpath, fn.dict)
-
   return fse.readFile(dictpath)
     .then(gzbuf=>{
       let rawdata = new Uint8Array(gzbuf)
-      let unzipped = pako.inflate(rawdata);
-
-      function toJson(chunk, cb) {
-        let arr = JSON.parse(chunk)
-        let idx = arr.shift()
-        let offset = arr[1], size = arr[2];
-        let unchunk = unzipped.slice(offset, offset + size)
-
-        let decoded = decoder.decode(unchunk)
-        decoded = decoded.split('\n').slice(1).join('; ').trim()
-
-        let clean = sanitizeHtml(decoded, {
-          allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
-          allowedAttributes: {
-            'a': [ 'href' ]
-          }
-          // , allowedIframeHostnames: ['www.diglossa.org']
-        });
-        let json = {dict: arr[0], trns: clean}
-        cb(null, json)
-      }
-
-      return miss.pipe(
-        rstream(indexData),
-        miss.parallel(5, toJson)
-      )
+      unzipped = pako.inflate(rawdata);
+      return unzipped
     })
+}
+
+function toJson(chunk, cb) {
+  let arr = JSON.parse(chunk)
+  let idx = arr.shift()
+  let offset = arr[1], size = arr[2]
+  let unchunk = unzipped.slice(offset, offset + size)
+  let decoded = decoder.decode(unchunk)
+  decoded = decoded.split('\n').slice(1).join('; ').trim()
+  let clean = sanitizeHtml(decoded, {
+    allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
+    allowedAttributes: {
+      'a': [ 'href' ]
+    }
+    // , allowedIframeHostnames: ['www.diglossa.org']
+  });
+  let json = {dict: arr[0], trns: clean}
+  cb(null, json)
 }
 
 function rstream(indexData) {
