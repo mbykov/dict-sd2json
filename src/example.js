@@ -1,11 +1,8 @@
 //
 import { stardict } from "./stardict";
-import _ from 'lodash'
 
 const log = console.log
 const path = require('path')
-const fse = require('fs-extra')
-const miss = require('mississippi')
 
 let dictpath = process.argv.slice(2)[0] || false
 
@@ -21,10 +18,5 @@ stardict(dictpath)
   .then(docIterator=> {
     for (const chunk of docIterator) {
       log('CHUNK', chunk.length)
-      if (chunk.length < 1000) log(chunk)
     }
   })
-
-function pouchIt(docs) {
-  log('__POUCH-IT', docs.length)
-}
