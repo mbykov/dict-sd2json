@@ -22,6 +22,7 @@ export async function stardict (dictpath) {
   }
 }
 
+// todo: EOL
 function * genDocs(indexData, unzipped) {
   let step = 0
   let empty = 0
@@ -97,7 +98,7 @@ function parseDescr(fn) {
 
 // todo .gz - наружу
 function parseIndex(fn) {
-  let idxpath = path.resolve(fn.dirpath, fn.idx)
+  const idxpath = path.resolve(fn.dirpath, fn.idx)
   return fse.readFile(idxpath)
     .then(buf=>{
 
