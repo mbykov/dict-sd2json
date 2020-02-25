@@ -15,18 +15,61 @@ export async function stardict (dictpath) {
     const descr = await parseDescr(fns)
     const indexData = await parseIndex(fns)
     const unzipped = await parseDict(fns)
-    const docIterator = genDocs(indexData, unzipped)
-    return {descr: descr, iterator: docIterator}
+    // const docIterator = genDocs(indexData, unzipped)
+    const phrases = genDocs(indexData, unzipped)
+    const docs = uniqDocs(phrases)
+    descr.size = docs.length
+    return {descr: descr, docs: docs}
+    // return {descr: descr, docs: docIterator}
   } catch(err) {
     console.log('STARDICT ERR:', err)
   }
 }
 
+function uniqDocs(rdocs) {
+  let hdocs = Object.create(null)
+
+  for (const rdoc of rdocs) {
+    let dict = rdoc.dict
+    let doc = {trns: rdoc.trns}
+    let hdoc = { _id: dict, docs: [doc] }
+
+    if (!hdocs[dict]) hdocs[dict] = hdoc
+    else if (hdocs[dict] && !hdocs[dict].docs) hdocs[dict].docs = [doc]
+    else hdocs[dict].docs.push(doc)
+
+    if (dict.split(' ').length > 1) {
+      let phdocs = parsePhrase(dict)
+      for (const phdoc of phdocs) {
+        if (!hdocs[phdoc._id]) hdocs[phdoc._id] = phdoc
+        else if (hdocs[phdoc._id] && !hdocs[phdoc._id].refs) hdocs[phdoc._id].refs = [dict]
+        else hdocs[phdoc._id].refs.push(dict)
+      }
+    }
+    if (hdocs[dict].refs && hdocs[dict].refs.length) hdocs[dict].refs = _.uniq(hdocs[dict].refs)
+  }
+  let docs = Object.values(hdocs)
+  return docs
+}
+
+function parsePhrase(dict) {
+  const phdocs = []
+  let wfs = dict.split(/[\p{P} ]+/ug).filter(Boolean)
+  for (const wf of wfs) {
+    if (wf.length < 3) continue
+    let phdoc = {_id: wf, refs: [dict] }
+    phdocs.push(phdoc)
+  }
+  return phdocs
+}
+
+
 // todo: EOL
-function * genDocs(indexData, unzipped) {
-  let step = 0
-  let empty = 0
+function genDocs(indexData, unzipped) {
+  // let step = 0
+  // let empty = 0
   let docs = []
+
   for (const arr of indexData) {
     let offset = arr[1], size = arr[2]
     let unchunk = unzipped.slice(offset, offset + size)
@@ -42,17 +85,19 @@ function * genDocs(indexData, unzipped) {
     if (trns.length) {
       let doc = {dict: arr[0], trns: trns}
       docs.push(doc)
-    } else {
-      empty++
+    // } else {
+      // empty++
     }
-    if (docs.length > 1000 - 1) {
-      step++
-      yield docs
-      docs = []
-    } else if (indexData.length == step*1000 + docs.length + empty) {
-      yield docs
-    }
+
+    // if (docs.length > 1000 - 1) {
+    //   step++
+    //   yield docs
+    //   docs = []
+    // } else if (indexData.length == step*1000 + docs.length + empty) {
+    //   yield docs
+    // }
   }
+  return docs
 }
 
 function parseDict(fns) {
