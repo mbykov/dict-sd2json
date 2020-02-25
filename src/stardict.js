@@ -91,8 +91,14 @@ function parseDescr(fn) {
   let ifopath = path.resolve(fn.dirpath, fn.ifo)
   return fse.readFile(ifopath)
     .then(ifobuf=> {
-      const ifo = ifobuf.toString().split('\n').slice(0,7)
-      return ifo
+      let ifo = ifobuf.toString().split('\n').slice(0,7)
+      let name = ifo[4] || ''
+      name = name.replace('bookname=', '')
+      // name = name.replace(/[- )(]/g,'')
+      name = name.replace(/[)(]/g,'').replace(/\s/g,'_')
+      let total = ifo[2].replace('wordcount=', '')*1 || 10000
+      let descr = {type: 'stardict', name: name, size: total, descr: ifo}
+      return descr
     })
 }
 

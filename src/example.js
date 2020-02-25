@@ -8,6 +8,7 @@ let dictpath = process.argv.slice(2)[0] || false
 
 if (!dictpath) {
   const fn = 'ArtDeRu.ifo'
+  // const fn = 'UniversalDeRu.ifo'
   dictpath = path.resolve(__dirname, '../../../DICTS/_dicts', fn)
 }
 
