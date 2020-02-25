@@ -18,27 +18,11 @@ let docs = []
 let chunk = []
 
 stardict(dictpath)
-  .then(res=> {
-    log('_______ SAVE IFO', res.ifo)
-    miss.pipe(
-      res.stream,
-      miss.through.obj(function (doc, enc, next) {
-        docs.push(doc)
-        chunk.push(doc)
-        if (chunk.length == 1000) {
-          pouchIt(chunk)
-          chunk = []
-        }
-        next()
-      }, function(cb) {
-        pouchIt(chunk)
-        docs = _.filter(docs, doc=> { return doc.dict && doc.trns })
-        log('____docs:', docs.slice(-3))
-        log('____total json docs:', docs.length)
-        fse.writeFileSync('myfile.txt', JSON.stringify(docs.slice(-3)));
-        cb()
-      })
-    )
+  .then(docIterator=> {
+    for (const chunk of docIterator) {
+      log('CHUNK', chunk.length)
+      if (chunk.length < 1000) log(chunk)
+    }
   })
 
 function pouchIt(docs) {

@@ -6,22 +6,8 @@ const fse = require('fs-extra')
 const log = console.log
 const util = require('util')
 const pako = require('pako')
-
-let decoder = new util.TextDecoder('utf-8')
-
-const miss = require('mississippi')
+const decoder = new util.TextDecoder('utf-8')
 const sanitizeHtml = require('sanitize-html');
-
-let unzipped
-
-function streamToString (stream) {
-  const chunks = []
-  return new Promise((resolve, reject) => {
-    stream.on('data', chunk => chunks.push(chunk))
-    stream.on('error', reject)
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
-  })
-}
 
 export async function stardict (dictpath) {
   try {
@@ -30,19 +16,57 @@ export async function stardict (dictpath) {
     let ifo = await parseIFO(fns)
     // log('_IFO', ifo)
     let indexData = await parseIndex(fns)
-    // log('_IDX', indexData.length)
-    let dict = await parseDict(fns, indexData)
-    let docs = []
-    let chunk = []
-
-    let stream = miss.pipe(
-      rstream(indexData),
-      miss.parallel(5, toJson)
-    )
-    return {ifo: ifo, stream: stream}
+    // indexData = indexData.slice(0, 10)
+    let unzipped = await parseDict(fns)
+    let docIterator = genDocs(indexData, unzipped)
+    return docIterator
   } catch(err) {
     console.log('_FNS', err)
   }
+}
+
+function * genDocs(indexData, unzipped) {
+  let step = 0
+  let empty = 0
+  let docs = []
+  for (const arr of indexData) {
+    // log('__________IDX', arr)
+    let offset = arr[1], size = arr[2]
+    let unchunk = unzipped.slice(offset, offset + size)
+    let decoded = decoder.decode(unchunk)
+    decoded = decoded.split('\n').slice(1).join('; ').trim()
+    let clean = sanitizeHtml(decoded, {
+      allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
+      allowedAttributes: {
+        'a': [ 'href' ]
+      }
+    })
+    let trns = _.compact(clean.split(';').map(trn=> { return trn.trim() }))
+    if (trns.length) {
+      let doc = {dict: arr[0], trns: trns}
+      docs.push(doc)
+    } else {
+      empty++
+    }
+    if (docs.length > 1000 - 1) {
+      // log('__________DOCS', docs.length)
+      step++
+      yield docs
+      docs = []
+    } else if (indexData.length == step*1000 + docs.length + empty) {
+      yield docs
+    }
+  }
+}
+
+function parseDict(fns) {
+  let dictpath = path.resolve(fns.dirpath, fns.dict)
+  return fse.readFile(dictpath)
+    .then(gzbuf=>{
+      let rawdata = new Uint8Array(gzbuf)
+      let unzipped = pako.inflate(rawdata);
+      return unzipped
+    })
 }
 
 function checkDir(dictpath) {
@@ -108,44 +132,4 @@ function parseIndex(fn) {
     }).catch(err=>{
       log('__ IDX ERR:', err)
     })
-}
-
-function parseDict(fn, indexData) {
-  let dictpath = path.resolve(fn.dirpath, fn.dict)
-  return fse.readFile(dictpath)
-    .then(gzbuf=>{
-      let rawdata = new Uint8Array(gzbuf)
-      unzipped = pako.inflate(rawdata);
-      return unzipped
-    })
-}
-
-function toJson(chunk, cb) {
-  let arr = JSON.parse(chunk)
-  let idx = arr.shift()
-  let offset = arr[1], size = arr[2]
-  let unchunk = unzipped.slice(offset, offset + size)
-  let decoded = decoder.decode(unchunk)
-  decoded = decoded.split('\n').slice(1).join('; ').trim()
-  let clean = sanitizeHtml(decoded, {
-    allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
-    allowedAttributes: {
-      'a': [ 'href' ]
-    }
-    // , allowedIframeHostnames: ['www.diglossa.org']
-  });
-  let json = {dict: arr[0], trns: clean}
-  cb(null, json)
-}
-
-function rstream(indexData) {
-  let idx = 0
-  return miss.from(function(size, next) {
-    if (idx == _.keys(indexData).length) return next(null, null)
-    let item = indexData[idx]
-    item.unshift(idx)
-    let arr = JSON.stringify(item)
-    idx++
-    next(null, arr)
-  })
 }
