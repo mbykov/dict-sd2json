@@ -16,7 +16,7 @@ export async function stardict (dictpath) {
     const indexData = await parseIndex(fns)
     const unzipped = await parseDict(fns)
     const docIterator = genDocs(indexData, unzipped)
-    return docIterator
+    return {descr: descr, iterator: docIterator}
   } catch(err) {
     console.log('STARDICT ERR:', err)
   }

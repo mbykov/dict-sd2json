@@ -15,8 +15,9 @@ let docs = []
 let chunk = []
 
 stardict(dictpath)
-  .then(docIterator=> {
-    for (const chunk of docIterator) {
+  .then(res=> {
+    log('DESCR', res.descr)
+    for (const chunk of res.iterator) {
       log('CHUNK', chunk.length)
     }
   })
