@@ -7,9 +7,11 @@ const path = require('path')
 let dictpath = process.argv.slice(2)[0] || false
 
 if (!dictpath) {
-  const fn = 'ArtDeRu.ifo'
-  // const fn = 'UniversalDeRu.ifo'
+  let fn = 'ArtDeRu.ifo'
+  // let fn = 'UniversalDeRu.ifo'
   dictpath = path.resolve(__dirname, '../../../DICTS/_dicts', fn)
+  fn = 'Babylon_Spanish_English_dictio.ifo'
+  dictpath = path.resolve(__dirname, '../../../DICTS/StarDict/Babylon', fn)
 }
 
 let docs = []
@@ -19,7 +21,4 @@ stardict(dictpath)
   .then(res=> {
     log('DESCR', res.descr)
     log('DOCS', res.docs.length)
-    // for (const chunk of res.iterator) {
-    //   log('CHUNK', chunk.length)
-    // }
   })

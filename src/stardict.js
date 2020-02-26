@@ -14,10 +14,13 @@ export async function stardict (dictpath) {
     const fns = await checkDir(dictpath)
     const descr = await parseDescr(fns)
     const indexData = await parseIndex(fns)
+    // log('___indexData', indexData.length)
     const unzipped = await parseDict(fns)
     // const docIterator = genDocs(indexData, unzipped)
     const phrases = genDocs(indexData, unzipped)
+    // log('___phrases', phrases.length)
     const docs = uniqDocs(phrases)
+    // log('___docs', docs.length)
     descr.size = docs.length
     return {descr: descr, docs: docs}
     // return {descr: descr, docs: docIterator}
@@ -69,14 +72,13 @@ function genDocs(indexData, unzipped) {
   // let step = 0
   // let empty = 0
   let docs = []
-
   for (const arr of indexData) {
     let offset = arr[1], size = arr[2]
     let unchunk = unzipped.slice(offset, offset + size)
     let decoded = decoder.decode(unchunk)
-    decoded = decoded.split('\n').slice(1).join('; ').trim()
+    // decoded = decoded.split('\n').slice(1).join('; ').trim()
     let clean = sanitizeHtml(decoded, {
-      allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i' ], // , 'dtrn'
+      allowedTags: [ 'b', 'em', 'strong', 'a', 'abr', 'i', 'font' ], // , 'dtrn'
       allowedAttributes: {
         'a': [ 'href' ]
       }
@@ -85,17 +87,7 @@ function genDocs(indexData, unzipped) {
     if (trns.length) {
       let doc = {dict: arr[0], trns: trns}
       docs.push(doc)
-    // } else {
-      // empty++
     }
-
-    // if (docs.length > 1000 - 1) {
-    //   step++
-    //   yield docs
-    //   docs = []
-    // } else if (indexData.length == step*1000 + docs.length + empty) {
-    //   yield docs
-    // }
   }
   return docs
 }
@@ -120,13 +112,13 @@ function checkDir(dictpath) {
       .then(fns=> {
         const fn = {dirpath: dirpath}
         const ifoname = _.find(fns, fn=> { return refn.test(fn) && /ifo/.test(fn)})
-        if (!ifoname) throw new Error('Not a stardict archive')
+        if (!ifoname) throw new Error('Not a stardict archive - no .ifo')
         fn.ifo = ifoname
         const idxname = _.find(fns, fn=> { return refn.test(fn) && /idx/i.test(fn)})
-        if (!idxname) throw new Error('Not a stardict archive')
+        if (!idxname) throw new Error('Not a stardict archive - no .idx')
         fn.idx = idxname
         const dictname = _.find(fns, fn=> { return refn.test(fn) && /\.dz/i.test(fn)})
-        if (!dictname) throw new Error('Not a stardict archive')
+        if (!dictname) throw new Error('Not a stardict archive - no .dz')
         fn.dict = dictname
         return fn
       })
@@ -139,8 +131,8 @@ function parseDescr(fn) {
       let ifo = ifobuf.toString().split('\n').slice(0,7)
       let name = ifo[4] || ''
       name = name.replace('bookname=', '')
-      // name = name.replace(/[- )(]/g,'')
-      name = name.replace(/[)(]/g,'').replace(/\s/g,'_')
+      // name = name.replace(/[ )(]/g,'')
+      name = name.replace(/[)(]/g, '').replace(/\s/g, '_')
       let total = ifo[2].replace('wordcount=', '')*1 || 10000
       let descr = {type: 'stardict', name: name, size: total, descr: ifo}
       return descr
