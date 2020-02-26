@@ -129,12 +129,11 @@ function parseDescr(fn) {
   return fse.readFile(ifopath)
     .then(ifobuf=> {
       let ifo = ifobuf.toString().split('\n').slice(0,7)
-      let name = ifo[4] || ''
-      name = name.replace('bookname=', '')
-      // name = name.replace(/[ )(]/g,'')
-      name = name.replace(/[)(]/g, '').replace(/\s/g, '_')
-      let total = ifo[2].replace('wordcount=', '')*1 || 10000
-      let descr = {type: 'stardict', name: name, size: total, descr: ifo}
+      let namestr = _.find(ifo, str=> { return /bookname/.test(str) })
+      let name = namestr.replace('bookname=', '')
+      let totalstr = _.find(ifo, str=> { return /wordcount/.test(str) })
+      let total = totalstr.replace('wordcount=', '')*1 || 10000
+      let descr = {type: 'sd', name: name, size: total, descr: ifo}
       return descr
     })
 }
