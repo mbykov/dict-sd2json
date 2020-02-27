@@ -71,7 +71,7 @@ function parsePhrase(dict) {
 function genDocs(indexData, unzipped) {
   // let step = 0
   // let empty = 0
-  let re = /\n/ // /;\n/
+  let re = /[;\n]/
   let docs = []
   for (const arr of indexData) {
     let offset = arr[1], size = arr[2]

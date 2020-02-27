@@ -21,9 +21,9 @@ stardict(dictpath)
   .then(res=> {
     log('DESCR', res.descr)
     log('DOCS', res.docs.length)
-    // let rdocs = res.docs.slice(100, 110)
-    // let docs = rdocs.map(r=> { return r.docs })
-    // docs.forEach(doc=> {
-    //   log('DOC', doc)
-    // })
+    let rdocs = res.docs.slice(100, 110)
+    let docs = rdocs.map(r=> { return r.docs })
+    docs.forEach(doc=> {
+      log('DOC', doc)
+    })
   })
