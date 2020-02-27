@@ -71,6 +71,7 @@ function parsePhrase(dict) {
 function genDocs(indexData, unzipped) {
   // let step = 0
   // let empty = 0
+  let re = /\n/ // /;\n/
   let docs = []
   for (const arr of indexData) {
     let offset = arr[1], size = arr[2]
@@ -83,7 +84,10 @@ function genDocs(indexData, unzipped) {
         'a': [ 'href' ]
       }
     })
-    let trns = _.compact(clean.split(';').map(trn=> { return trn.trim() }))
+
+
+    let trns = _.compact(_.flatten(clean.split(re).map(trn=> { return trn.trim() })))
+    trns = trns.map(trn=> { return trn.replace(/\[[^)]*\]/g, '') })
     if (trns.length) {
       let doc = {dict: arr[0], trns: trns}
       docs.push(doc)
