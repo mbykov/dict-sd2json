@@ -6,7 +6,7 @@
   "copyright": "© 2019, Michael Bykov",
   "license": "GPL-3.0",
   "homepage": "http://diglossa.org/diglossa.js",
-  "main": "dist/stardict.js",
+  "main": "dist/index.js",
   "keywords": [
     "node.js",
     "json"

@@ -9,21 +9,16 @@ const pako = require('pako')
 const decoder = new util.TextDecoder('utf-8')
 const sanitizeHtml = require('sanitize-html');
 
-export async function stardict (dictpath) {
+export async function sd2js (dictpath) {
   try {
     const fns = await checkDir(dictpath)
     const descr = await parseDescr(fns)
     const indexData = await parseIndex(fns)
-    // log('___indexData', indexData.length)
     const unzipped = await parseDict(fns)
-    // const docIterator = genDocs(indexData, unzipped)
     const phrases = genDocs(indexData, unzipped)
-    // log('___phrases', phrases.length)
     const docs = uniqDocs(phrases)
-    // log('___docs', docs.length)
     descr.size = docs.length
     return {descr: descr, docs: docs}
-    // return {descr: descr, docs: docIterator}
   } catch(err) {
     console.log('STARDICT ERR:', err)
   }
@@ -69,8 +64,6 @@ function parsePhrase(dict) {
 
 // todo: EOL
 function genDocs(indexData, unzipped) {
-  // let step = 0
-  // let empty = 0
   let re = /[;\n]/
   let docs = []
   for (const arr of indexData) {
@@ -85,11 +78,12 @@ function genDocs(indexData, unzipped) {
       }
     })
 
-
     let trns = _.compact(_.flatten(clean.split(re).map(trn=> { return trn.trim() })))
     trns = trns.map(trn=> { return trn.replace(/\[[^)]*\]/g, '') })
     if (trns.length) {
-      let doc = {dict: arr[0], trns: trns}
+      let dict = arr[0]
+      if (/^\d/.test(dict)) continue
+      let doc = {dict: dict, trns: trns}
       docs.push(doc)
     }
   }
