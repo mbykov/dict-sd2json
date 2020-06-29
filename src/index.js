@@ -28,7 +28,7 @@ function uniqDocs(rdocs) {
   let hdocs = Object.create(null)
 
   for (const rdoc of rdocs) {
-    let dict = rdoc.dict
+    let dict = rdoc.dict.replace(/^_/, '')
     let doc = {trns: rdoc.trns}
     let hdoc = { _id: dict, docs: [doc] }
 

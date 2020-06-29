@@ -24,9 +24,12 @@ sd2js(dictpath)
     log('DESCR', res.descr)
     log('DOCS', res.docs.length)
 
+    // let doc = res.docs.find(doc=> doc._id == 'Внимание!')
+    // log('_DOC', doc.docs)
+
     let rdocs = res.docs.slice(100, 105)
-    log('RDOC', rdocs.length)
-    rdocs.forEach(rdoc=> {
-      log('DOC', rdoc)
-    })
+    log('RDOC', rdocs)
+    // rdocs.forEach(rdoc=> {
+      // log('DOC', rdoc)
+    // })
   })
