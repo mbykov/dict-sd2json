@@ -24,11 +24,43 @@ export async function sd2js (dictpath) {
   }
 }
 
+// rdoc - {dict, trns}
 function uniqDocs(rdocs) {
   let hdocs = Object.create(null)
 
+  // rdocs = rdocs.slice(1000,1200)
+  // log('____RDOCS', rdocs, rdocs.length)
+
   for (const rdoc of rdocs) {
-    let dict = rdoc.dict.replace(/^_/, '')
+    let dict = rdoc.dict.replace(/^_/, '') // Couch/Pouch restriction
+    // let doc = {trns: rdoc.trns}
+    let hdoc = { _id: dict, trns: rdoc.trns }
+
+    // в любом случае dics+trns
+    if (!hdocs[dict]) hdocs[dict] = hdoc
+    else if (hdocs[dict] && !hdocs[dict].trns) hdocs[dict].trns = [rdoc.trns]
+    else hdocs[dict].trns.push(rdoc.trns)
+
+    if (dict.split(' ').length > 1) {
+      let phrasedocs = parsePhrase(dict)
+      for (const phdoc of phrasedocs) {
+        if (!hdocs[phdoc._id]) hdocs[phdoc._id] = phdoc
+        else if (hdocs[phdoc._id] && !hdocs[phdoc._id].refs) hdocs[phdoc._id].refs = [dict]
+        else hdocs[phdoc._id].refs.push(dict)
+      }
+    }
+    if (hdocs[dict].refs) hdocs[dict].refs = _.uniq(hdocs[dict].refs)
+  }
+  let docs = Object.values(hdocs)
+  return docs
+}
+
+// == здесь doc = {_id, docs}, docs=> {doc, trns}
+function uniqDocs_old(rdocs) {
+  let hdocs = Object.create(null)
+
+  for (const rdoc of rdocs) {
+    let dict = rdoc.dict.replace(/^_/, '') // Couch/Pouch restriction
     let doc = {trns: rdoc.trns}
     let hdoc = { _id: dict, docs: [doc] }
 
@@ -37,8 +69,8 @@ function uniqDocs(rdocs) {
     else hdocs[dict].docs.push(doc)
 
     if (dict.split(' ').length > 1) {
-      let phdocs = parsePhrase(dict)
-      for (const phdoc of phdocs) {
+      let phrasedocs = parsePhrase(dict)
+      for (const phdoc of phrasedocs) {
         if (!hdocs[phdoc._id]) hdocs[phdoc._id] = phdoc
         else if (hdocs[phdoc._id] && !hdocs[phdoc._id].refs) hdocs[phdoc._id].refs = [dict]
         else hdocs[phdoc._id].refs.push(dict)

@@ -13,6 +13,7 @@ if (!dictpath) {
   // fn = 'Babylon_Spanish_English_dictio.ifo'
   fn = 'Babylon/NEW_Babylon_German_English_dictionary.ifo'
   fn = 'ItRuIt/stardict-PhraseBookRuIt-2.4.2/PhraseBookRuIt.ifo'
+  fn = 'ItRuIt/stardict-LawItRu-2.4.2/LawItRu.ifo'
   dictpath = path.resolve(__dirname, '../../../DICTS/StarDict', fn)
 }
 
@@ -27,7 +28,8 @@ sd2js(dictpath)
     // let doc = res.docs.find(doc=> doc._id == 'Внимание!')
     // log('_DOC', doc.docs)
 
-    let rdocs = res.docs.slice(100, 105)
+    let rdocs = res.docs.slice(100, 110)
+    rdocs = rdocs.filter(rdoc=> rdoc.refs)
     log('RDOC', rdocs)
     // rdocs.forEach(rdoc=> {
       // log('DOC', rdoc)
