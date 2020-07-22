@@ -1,0 +1,32 @@
+[
+  {
+    source: true,
+    author: 'Herman Hesse',
+    title: 'Siddhartha',
+    lang: 'deu',
+    type: 'md',
+    file: 'hesse-siddhartha/siddhartha.deu.md'},
+  {
+    author: 'Gunther Olesch, Anke Dreher, Amy Coulter, Stefan Langer and Semyon Chaichenets',
+    title: 'Siddhartha',
+    lang: 'eng',
+    type: 'md',
+    file: 'hesse-siddhartha/siddhartha.eng.md'},
+  {
+    author: 'Joseph Delage',
+    title: 'Siddhartha',
+    lang: 'fra',
+    type: 'md',
+    file: 'hesse-siddhartha/siddhartha.fra.md'},
+  // {
+  // lang: 'fra',
+  //  type: 'md',
+  //  com: true,
+  //  file: 'hesse-siddhartha/siddhartha.fra-com.md'},
+  {
+    author: 'Б. Д. Прозоровская',
+    title: 'Сиддхартха',
+    lang: 'rus',
+    type: 'md',
+    file: 'hesse-siddhartha/siddhartha.rus.md'}
+]
