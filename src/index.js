@@ -33,6 +33,7 @@ function uniqDocs(rdocs) {
 
   for (const rdoc of rdocs) {
     let dict = rdoc.dict.replace(/^_/, '') // Couch/Pouch restriction
+    // if (dict != 'surprise') continue
     // let doc = {trns: rdoc.trns}
     let hdoc = { _id: dict, trns: rdoc.trns }
 
@@ -52,6 +53,7 @@ function uniqDocs(rdocs) {
     if (hdocs[dict].refs) hdocs[dict].refs = _.uniq(hdocs[dict].refs)
   }
   let docs = Object.values(hdocs)
+  // log('______DOCS', docs)
   return docs
 }
 

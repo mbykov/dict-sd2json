@@ -3,6 +3,7 @@ import { sd2js } from "./index";
 
 const log = console.log
 const path = require('path')
+const fse = require('fs-extra')
 
 let dictpath = process.argv.slice(2)[0] || false
 
@@ -15,7 +16,11 @@ if (!dictpath) {
   fn = 'ItRuIt/stardict-PhraseBookRuIt-2.4.2/PhraseBookRuIt.ifo'
   fn = 'ItRuIt/stardict-LawItRu-2.4.2/LawItRu.ifo'
   dictpath = path.resolve(__dirname, '../../../DICTS/StarDict', fn)
+  // '../../../DICTS/StarDict'
 }
+
+dictpath = '/home/michael/DICTS/StarDict/EnRuEn/stardict-LingvoUniversalEnRu-2.4.2/LingvoUniversalEnRu.ifo'
+let respath = '/home/michael/DICTS/LingvoUniversalEnRu.json'
 
 let docs = []
 let chunk = []
@@ -25,12 +30,11 @@ sd2js(dictpath)
     log('DESCR', res.descr)
     log('DOCS', res.docs.length)
 
-    // let doc = res.docs.find(doc=> doc._id == 'Внимание!')
-    // log('_DOC', doc.docs)
+    // fse.writeJsonSync(respath, res.docs, {spaces: 2})
 
-    let rdocs = res.docs.slice(100, 110)
-    rdocs = rdocs.filter(rdoc=> rdoc.refs)
-    log('RDOC', rdocs)
+    // let rdocs = res.docs.slice(100, 110)
+    let rdocs = docs.filter(rdoc=> rdoc.refs)
+    log('RDOC', rdocs.length)
     // rdocs.forEach(rdoc=> {
       // log('DOC', rdoc)
     // })
