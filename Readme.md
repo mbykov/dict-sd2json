@@ -34,14 +34,14 @@ Note: no errors, don't know why Github highlights some code in red
 ```json
 **books**:
 
--: https://github.com/mbykov/book-epub2json
--: https://github.com/mbykov/dict-sd2json
--: https://github.com/mbykov/book-md2json
--: https://github.com/mbykov/book-pdf2json
+- https://github.com/mbykov/book-epub2json
+- https://github.com/mbykov/dict-sd2json
+- https://github.com/mbykov/book-md2json
+- https://github.com/mbykov/book-pdf2json
 
 **dicts**:
 
-https://github.com/mbykov/dict-sd2json
+- https://github.com/mbykov/dict-sd2json
 
 dict-dsl2json
 ```
