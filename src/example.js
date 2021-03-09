@@ -1,6 +1,6 @@
 'use strict'
 
-import { sd2js } from "./index";
+import { sd2json } from "./index";
 
 const log = console.log
 const path = require('path')
@@ -16,7 +16,7 @@ if (!dictpath) {
 log('_SOURCE:', dictpath)
 let respath = path.resolve(__dirname, '../test/test.json')
 
-sd2js(dictpath)
+sd2json(dictpath)
   .then(res=> {
     log('DESCR', res.descr)
     log('DOCS', res.docs.length)
