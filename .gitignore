@@ -7,6 +7,8 @@ coverage
 logs
 pids
 dist
+dicts
+test
 _*.org
 Junk
 test/Junk

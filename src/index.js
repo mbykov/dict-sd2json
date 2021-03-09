@@ -28,16 +28,10 @@ export async function sd2js (dictpath) {
 function uniqDocs(rdocs) {
   let hdocs = Object.create(null)
 
-  // rdocs = rdocs.slice(1000,1200)
-  // log('____RDOCS', rdocs, rdocs.length)
-
   for (const rdoc of rdocs) {
     let dict = rdoc.dict.replace(/^_/, '') // Couch/Pouch restriction
-    // if (dict != 'surprise') continue
-    // let doc = {trns: rdoc.trns}
     let hdoc = { _id: dict, trns: rdoc.trns }
 
-    // в любом случае dics+trns
     if (!hdocs[dict]) hdocs[dict] = hdoc
     else if (hdocs[dict] && !hdocs[dict].trns) hdocs[dict].trns = [rdoc.trns]
     else hdocs[dict].trns.push(rdoc.trns)
@@ -53,7 +47,6 @@ function uniqDocs(rdocs) {
     if (hdocs[dict].refs) hdocs[dict].refs = _.uniq(hdocs[dict].refs)
   }
   let docs = Object.values(hdocs)
-  // log('______DOCS', docs)
   return docs
 }
 
