@@ -22,8 +22,8 @@ let respath = test/'test.json'
 
 sd2json(dictpath)
   .then(res=> {
-    log('DESCR', res.descr)
-    log('DOCS', res.docs.length)
+    console.log('DESCR', res.descr)
+    console.log('DOCS', res.docs.length)
     fse.writeJsonSync(respath, res.docs, {spaces: 2})
   })
 ```
@@ -34,13 +34,10 @@ Note: no errors, don't know why Github highlights some code in red
 ```json
 **books**:
 
-https://github.com/mbykov/book-epub2json
-
-https://github.com/mbykov/dict-sd2json
-
-https://github.com/mbykov/book-md2json
-
-https://github.com/mbykov/book-pdf2json
+-: https://github.com/mbykov/book-epub2json
+-: https://github.com/mbykov/dict-sd2json
+-: https://github.com/mbykov/book-md2json
+-: https://github.com/mbykov/book-pdf2json
 
 **dicts**:
 
