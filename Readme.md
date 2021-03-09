@@ -42,5 +42,4 @@ Note: no errors, don't know why Github highlights some code in red
 **dicts**:
 
 - https://github.com/mbykov/dict-sd2json
-
-dict-dsl2json
+- dict-dsl2json
