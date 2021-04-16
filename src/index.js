@@ -9,7 +9,7 @@ const pako = require('pako')
 const decoder = new util.TextDecoder('utf-8')
 const sanitizeHtml = require('sanitize-html');
 
-export async function sd2js (dictpath) {
+export async function sd2json (dictpath) {
   try {
     const fns = await checkDir(dictpath)
     const descr = await parseDescr(fns)

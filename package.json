@@ -1,5 +1,5 @@
 {
-  "version": "0.9.0",
+  "version": "0.9.1",
   "name": "dict-sd2json",
   "description": "stardict to json converter for diglossa.js",
   "Author": "Michael Bykov <m.bykov@gmail.com>",
